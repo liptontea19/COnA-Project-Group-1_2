@@ -31,13 +31,13 @@ VERSION="10 (buster)"
 VERSION_CODENAME=buster
 */
 
-#include <wiringPi.h> // Only in raspberry pi system
-#include <softPwm.h> // Only in raspberry pi system
+// #include <wiringPi.h> // Only in raspberry pi system
+// #include <softPwm.h> // Only in raspberry pi system
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wiringSerial.h> // Only in raspberry pi system
+// #include <wiringSerial.h> // Only in raspberry pi system
 #include <unistd.h>
 
 /* DEFINITIONS */
@@ -55,8 +55,11 @@ VERSION_CODENAME=buster
 #define BLINK_RED 2
 #define CONFIRM 1
 
-// MONITORING
-#define STUDENTID "2101234"     // the student ID is not needed in the group project of 2023
+// Waveform output file and used variables
+#define FILENAME "waveform.txt"
+int yRed, yGreen; // y-axis values for Red and Green LEDs
+int dcRed, dcGreen; //DC values for the two LEDs (0-100%)
+int fRed, fGreen; // frequency values for the two LEDs (0-10Hz)
 
 /* FUNCTION PROTOTYPES */
 void setupProgram();
@@ -87,11 +90,16 @@ int main(void) {
 Sets up the LED GPIO pins as output and PWM
 */
 void setupProgram() {
-    wiringPiSetupGpio();
-    pinMode(RED, OUTPUT);
-    pinMode(GREEN, OUTPUT);
-    softPwmCreate(GREEN, 0, 100);
-    softPwmCreate(RED, 0, 100);
+    //wiringPiSetupGpio();
+    //pinMode(RED, OUTPUT);
+    //pinMode(GREEN, OUTPUT);
+    //softPwmCreate(GREEN, 0, 100);
+    //softPwmCreate(RED, 0, 100);
+    FILE *fp = fopen(FILENAME, "w");
+    if (fp == NULL)
+    {
+        printf("Unable to open file: %s", FILENAME);
+    }
     system("clear");
 }
 
@@ -149,14 +157,24 @@ int getUserSelection() {
 
 /* 
 For troubleshooting, turning off LEDs and PWM
+Change the LED configuration values to the OFF state
+DC = 100%, f = 0Hz, State Value (y<LED>) = 0 (low)
 */
 void turnOffLeds() {
     system("clear");
     printf("\nTurning off both LEDs...\n");
+    /*
     digitalWrite(GREEN, LOW);
     softPwmWrite(GREEN, 0);
     digitalWrite(RED, LOW);
-    softPwmWrite(RED, 0);
+    softPwmWrite(RED, 0); 
+    */
+    dcGreen = 100; // Since the state does not change, DC value is 100%
+    fGreen = 0; // DC = 100%, f = 0Hz, State Value (yGreen) = 0 (low)
+    yGreen = 0; // State Value: LOW, '0'
+    dcRed = 100;
+    fRed = 0;
+    yRed = 0;
 }
 
 /* 
@@ -165,10 +183,18 @@ For troubleshooting, turning on LEDs and PWM at 100
 void turnOnLeds() {
     system("clear");
     printf("\nTurning on both LEDs...\n");
+    /*
     digitalWrite(GREEN, HIGH);
     softPwmWrite(GREEN, 100);
     digitalWrite(RED, HIGH);
     softPwmWrite(RED, 100);
+    */
+    dcGreen = 100; // change the LED configuration values to the ON state
+    fGreen = 0; // DC = 100%, f = 0Hz, State Value (yGreen) = 0 (low)
+    yGreen = 0; // State Value: LOW, '0'
+    dcRed = 100;
+    fRed = 0;
+    yRed = 0;
 }
 
 /* 
