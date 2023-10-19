@@ -61,7 +61,7 @@ VERSION_CODENAME=buster
 #define FILENAME "waveform.txt" // name of file to generate waveform
 FILE *waveFile; // waveform.txt file reference
 int yRed, yGreen; // y-axis values for Red and Green LEDs ('1' or '0')
-float dcRed, dcGreen; //DC values for the two LEDs (0-100%)
+int dcRed, dcGreen; //DC values for the two LEDs (0-100%)
 int fRed, fGreen; // frequency values for the two LEDs (0-10Hz)
 
 /* FUNCTION PROTOTYPES */
