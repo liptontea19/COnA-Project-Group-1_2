@@ -47,6 +47,8 @@ VERSION_CODENAME=buster
 // Program States
 #define TURN_OFF 0
 #define TURN_ON 1
+#define LOW 0   // LED Waveform 'LOW' State of value 0
+#define HIGH 1  // LED Waveform 'High' State of value 1
 #define BLINK 2
 #define EXIT 3
 
@@ -56,9 +58,10 @@ VERSION_CODENAME=buster
 #define CONFIRM 1
 
 // Waveform output file and used variables
-#define FILENAME "waveform.txt"
-int yRed, yGreen; // y-axis values for Red and Green LEDs
-int dcRed, dcGreen; //DC values for the two LEDs (0-100%)
+#define FILENAME "waveform.txt" // name of file to generate waveform
+FILE *waveFile; // waveform.txt file reference
+int yRed, yGreen; // y-axis values for Red and Green LEDs ('1' or '0')
+float dcRed, dcGreen; //DC values for the two LEDs (0-100%)
 int fRed, fGreen; // frequency values for the two LEDs (0-10Hz)
 
 /* FUNCTION PROTOTYPES */
@@ -88,15 +91,16 @@ int main(void) {
 
 /* 
 Sets up the LED GPIO pins as output and PWM
+Opens the file to be used for outputting the recorded waveform values
 */
 void setupProgram() {
     //wiringPiSetupGpio();
     //pinMode(RED, OUTPUT);
     //pinMode(GREEN, OUTPUT);
-    //softPwmCreate(GREEN, 0, 100);
-    //softPwmCreate(RED, 0, 100);
-    FILE *fp = fopen(FILENAME, "w");
-    if (fp == NULL)
+    //softPwmCreate(GREEN, 0, 100); //creates a 10ms long pulse cycle for the RED led
+    //softPwmCreate(RED, 0, 100);   //creates a 10ms long pulse cycle for the GREEN led
+    waveFile = fopen(FILENAME, "w"); //opens or creates a file named waveform.txt
+    if (waveFile == NULL)   // checks if the specified file exists in the system
     {
         printf("Unable to open file: %s", FILENAME);
     }
@@ -104,16 +108,19 @@ void setupProgram() {
 }
 
 /* 
-Takes the input of the user selection and direct it to different states of the program
+Takes the input of the user selection and directs it to different states of the program
+1. Turn OFF the LEDs
+2. Turn ON the LEDs
+3. Blinks the LEDs according to the user specifications
+
 */
 void startProgram() {
 
     int selection;
-
     do {
-        selection = getUserSelection();
+        selection = getUserSelection(); //prompts user for the LED to stay on, off, blink or end program
 
-        switch(selection) {
+        switch(selection) { // sets configuration values
 
             case TURN_OFF:
                 turnOffLeds();
@@ -130,6 +137,9 @@ void startProgram() {
                 printf("\nInvalid Input. Try Again...\n");
                 break;
         }
+        // fprintf(waveFile, "F1: %d %f", fGreen, dcGreen); // adds config values for the green LED waveform into file
+        //fprintf(waveFile, "F2: %d %f", fRed, dcRed); // adds config values for the Red LED waveform into the file
+
 
     } while (selection != EXIT);
     
@@ -165,10 +175,12 @@ void turnOffLeds() {
     printf("\nTurning off both LEDs...\n");
     /*
     digitalWrite(GREEN, LOW);
-    softPwmWrite(GREEN, 0);
+    softPwmWrite(GREEN, 0); // 0% DC (0ms/10ms ON)
     digitalWrite(RED, LOW);
     softPwmWrite(RED, 0); 
     */
+    fprintf(waveFile, "F1: 0Hz 0\n");
+    fprintf(waveFile, "F2: 0Hz 0\n");
     dcGreen = 100; // Since the state does not change, DC value is 100%
     fGreen = 0; // DC = 100%, f = 0Hz, State Value (yGreen) = 0 (low)
     yGreen = 0; // State Value: LOW, '0'
@@ -185,7 +197,7 @@ void turnOnLeds() {
     printf("\nTurning on both LEDs...\n");
     /*
     digitalWrite(GREEN, HIGH);
-    softPwmWrite(GREEN, 100);
+    softPwmWrite(GREEN, 100);   // 100% DC (10ms/10ms ON)
     digitalWrite(RED, HIGH);
     softPwmWrite(RED, 100);
     */
@@ -206,9 +218,19 @@ void blink() {
     system("clear");
     printf("\nBlink...\n");
     
-    int blinkLed = getBlinkLed();
-    int frequency = getBlinkFrequency();
-    int brightness = getBlinkBrightness();
+    int blinkLed = getBlinkLed();   // Prompts user to choose which LED to blink
+    int frequency = getBlinkFrequency();    // Prompts user to choose wave frequency between 0 and 10 Hz    
+    int brightness = getBlinkBrightness();  // Prompts user to choose the brightness of the LED (0-100%) which changes the duty cycle in the PWM fn
+    if (blinkLed == 1) // Green LED configuration is chosen
+    {
+        fGreen = frequency;
+        dcGreen = brightness;
+    }
+    else 
+    {
+        fRed = frequency;
+        dcRed = brightness;
+    }
 
     if (confirmBlinkSelection(blinkLed, frequency, brightness) == CONFIRM) {
 
@@ -248,7 +270,7 @@ int getBlinkLed() {
 }
 
 /* 
-Menu to get user selction on Frequency to blink
+Menu to get user selection on Frequency to blink
 */
 int getBlinkFrequency() {
 
@@ -271,7 +293,8 @@ int getBlinkFrequency() {
 }
 
 /* 
-Menu to get user selction on LED brightness
+Menu to get user selection on LED brightness
+Brightness value is between 0 and 100
 */
 int getBlinkBrightness() {
 
@@ -326,81 +349,37 @@ int confirmBlinkSelection(int blinkLed, int blinkFrequency, int blinkBrightness)
 }
 
 /* 
-Handshake algorithm to connect and send blink configurations
-*/
-int connectToMonitorDevice(int blinkLed, int blinkFrequency, int blinkBrightness) {
-    system("clear");
-    printf("Connecting to Monitor Device...\n");
-    
-    int serial_port;
-    char studentid[] = STUDENTID;
-
-    char blinkLedString[1];
-    char blinkFrequencyString[2];
-    char blinkBrightnessString[3];
-
-    sprintf(blinkLedString, "%d", blinkLed);
-    sprintf(blinkFrequencyString, "%d", blinkFrequency);
-    sprintf(blinkBrightnessString, "%d", blinkBrightness);
-
-    // Open the serial port
-    serial_port = serialOpen("/dev/ttyAMA0", 9600);
-    if (serial_port < 0) {
-    fprintf(stderr, "Error opening serial port\n");
-        return -1;
-    }
-
-    // Write data to the serial port
-    serialPuts(serial_port, studentid);
-
-    // Read data from the serial port
-    char buffer[256];
-    int n = read(serial_port, buffer, sizeof(buffer));
-    buffer[n] = '\0';
-
-    if (strlen(buffer) == 7) {
-        printf("Acknowledge Student ID: %s\n", buffer);
-    } else return -1;    
-
-    // Send Blink Configuration
-    serialPuts(serial_port, blinkLedString);
-    n = read(serial_port, buffer, sizeof(buffer));
-    buffer[n] = '\0';
-    printf("%s\n", buffer);
-
-    serialPuts(serial_port, blinkFrequencyString);
-    n = read(serial_port, buffer, sizeof(buffer));
-    buffer[n] = '\0';
-    printf("%s\n", buffer);
-
-    serialPuts(serial_port, blinkBrightnessString);
-    n = read(serial_port, buffer, sizeof(buffer));
-    buffer[n] = '\0';
-    printf("%s\n", buffer);
-
-    serialClose(serial_port);
-    printf("Connection Successful!\n");
-    delay(5000);
-    return 1;
-}
-
-/* 
+INPUT VARIABLES:
+int blinkLed: choice of LED
+int blinkFrequency: frequency of wave, 0-10Hz
+int blinkBrightness: uptime percentage of waveform each pulse
 Blinks the LED according to the user configuration
+Runs every 20ms
+1.  Convert the blinkFreq argument into the period of the waveform
+2.  Picks the LED IO Pin, Green 13 or Red 27 to blink
+3.  Runs a 20ms FOR LOOP 
+    3a. if time change is longer than period, restart waveform
+    3b. Toggles the LED state 
+    3c. Triggers softPwmWrite command to change Duty cycle
 */
 void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
 
     printf("\nBlinking...\n");
     
     // Setting Frequency
-    float onOffTime = 1.0f / blinkFrequency * 1000;
+    float onOffTime = 1.0f / blinkFrequency * 1000; // period of waveform (T = 1/f)
+    char chosenLed; //character to represent which colour 'G' or 'R'
 
-    // Setting Blink LED
+    // Setting Blink LED to Red or Green based on blinkLed choice
     if (blinkLed == BLINK_GREEN) {
         blinkLed = GREEN;
-    } else blinkLed = RED;
-
+        chosenLed = 'G';
+    } else {
+        blinkLed = RED;
+        chosenLed = 'R';
+    }
     // Blinking
-    unsigned long previousMillis = 0;
+    unsigned long previousMillis = 0;   
     int ledState = LOW;
 
     for (int blink = 0; blink < 20;)
@@ -411,16 +390,17 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
             previousMillis = currentMillis;
             if (ledState == LOW) {
                 ledState = HIGH;
-                softPwmWrite(blinkLed, blinkBrightness);
+                //softPwmWrite(blinkLed, blinkBrightness);  // blinkbrightness changes the percentage uptime of LED being ON
             } else {
                 ledState = LOW;
-                softPwmWrite(blinkLed, 0);
+                //softPwmWrite(blinkLed, 0);
             }
             blink++;
-            digitalWrite(blinkLed, ledState);
+            //digitalWrite(blinkLed, ledState);
         }
+        fprintf(waveFile, "%f\n", currentMillis);   // print the current output time
     }
-
+    fprintf(waveFile, "%c %d\n", chosenLed, ledState);    // adds one line of the current LED state every 20ms
 }
 
 /* 
@@ -430,7 +410,7 @@ void endProgram() {
     system("clear");
     printf("\nCleaning Up...\n");
     // Turn Off LEDs
-    digitalWrite(GREEN, LOW);
+    /*digitalWrite(GREEN, LOW);
     digitalWrite(RED, LOW);
 
     // Turn Off LED Software PWM
@@ -438,8 +418,9 @@ void endProgram() {
     softPwmWrite(RED, 0);
 
     // Reset Pins to Original INPUT State
-    pinMode(GREEN, INPUT);
-    pinMode(RED, INPUT);
-
+    // pinMode(GREEN, INPUT);
+    pinMode(RED, INPUT); */
+    fclose(waveFile);
+    printf("Sending waveform file to PC.");
     printf("Bye!\n\n");
 }
