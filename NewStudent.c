@@ -378,15 +378,16 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
         blinkLed = RED;
         chosenLed = 'R';
     }
+    fprintf(waveFile, "%c,%d,%d", chosenLed, blinkFrequency, blinkBrightness);
     // Blinking
     unsigned long previousMillis = 0;   
     int ledState = LOW;
 
-    for (int blink = 0; blink < 20;)
+    for (int blink = 0; blink < 20;)    // Instructs LED to blink 20 times
     {
-        unsigned long currentMillis = millis();
+        unsigned long currentMillis = millis(); // gets the current millisecond time value
 
-        if (currentMillis - previousMillis >= onOffTime) {
+        if (currentMillis - previousMillis >= onOffTime) {  // run if statement at the start of each wave
             previousMillis = currentMillis;
             if (ledState == LOW) {
                 ledState = HIGH;
@@ -400,7 +401,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
         }
         fprintf(waveFile, "%f\n", currentMillis);   // print the current output time
     }
-    fprintf(waveFile, "%c %d\n", chosenLed, ledState);    // adds one line of the current LED state every 20ms
+    // fprintf(waveFile, "%c %d\n", chosenLed, ledState);    
 }
 
 /* 
