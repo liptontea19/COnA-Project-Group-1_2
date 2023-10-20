@@ -4,10 +4,11 @@ Project has two portions:
 # Work assignment:
 ## NewStudent.c
 - Andrew 
--
+- Shifa
+- Daniel
 ## DisplayPlot.c
--
--
+- Deva
+- En Thong
 
 # Naming Convention 
 camelCase for variables, e.g. Red Led Wave Form value: redLedWaveform
