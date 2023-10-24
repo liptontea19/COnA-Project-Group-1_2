@@ -82,7 +82,6 @@ void endProgram();
 
 /* MAIN PROGRAM */
 int main(void) {
-
     setupProgram();
     startProgram();
     endProgram();
@@ -411,16 +410,21 @@ int connectToMonitorDevice(int blinkLed, int blinkFrequency, int blinkBrightness
 /* 
 INPUT VARIABLES:
 int blinkLed: choice of LED
-int blinkFrequency: frequency of wave, 0-10Hz
-int blinkBrightness: uptime percentage of waveform each pulse
+int blinkFrequency: frequency of wave (0-10Hz)
+int blinkBrightness: uptime percentage of waveform each pulse (0-100%)
 Blinks the LED according to the user configuration
-Runs every 20ms
 1.  Convert the blinkFreq argument into the period of the waveform
 2.  Picks the LED IO Pin, Green 13 or Red 27 to blink
-3.  Runs a 20ms FOR LOOP 
-    3a. if time change is longer than period, restart wave cycle
-    3b. Toggles the LED state 
-    3c. Triggers softPwmWrite command to set Duty cycle based on brightness
+3.  Writes a header line of the LED wave configuration (Colour, frequency, Duty Cycle)
+4.  Runs a FOR LOOP that blinks the LED 20 times
+    Data Recording Portion
+    a_1 Checks if 20ms has passed since the previous time
+    a_2 Records the data point
+    Actual Physical Blink Portion
+    b_1. if time passed is longer than one cycle of wave
+    b_2. Toggles the LED state 
+    b_2. Triggers softPwmWrite command to set Duty cycle based on brightness
+    b_4. Calls digitalWrite() to instruct IO pin to follow softPwmWrite    
 */
 void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
 
@@ -467,9 +471,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
             digitalWrite(blinkLed, ledState);   // instructs GPIO pin to follow current LedState
             fprintf(waveFile, "Time:%d\n", currentMillis);   // print the current output time
         }
-        //fprintf(waveFile, "Time:%.0f\n", currentMillis);   // print the current output time
-    }
-    //printf(waveFile, "%d\n", chosenLed, ledState);    
+    }  
 }
 
 /* 
@@ -479,7 +481,7 @@ void endProgram() {
     system("clear");
     printf("\nCleaning Up...\n");
     // Turn Off LEDs
-    /*digitalWrite(GREEN, LOW);
+    digitalWrite(GREEN, LOW);
     digitalWrite(RED, LOW);
 
     // Turn Off LED Software PWM
@@ -487,9 +489,9 @@ void endProgram() {
     softPwmWrite(RED, 0);
 
     // Reset Pins to Original INPUT State
-    // pinMode(GREEN, INPUT);
-    pinMode(RED, INPUT); */
+    pinMode(GREEN, INPUT);
+    pinMode(RED, INPUT); 
     fclose(waveFile);
-    printf("Sending waveform file to PC.");
+    printf("Sending waveform file to PC.\n");
     printf("Bye!\n\n");
 }
