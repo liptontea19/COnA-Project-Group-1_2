@@ -448,7 +448,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
         unsigned long currentMillis = millis(); // gets the current millisecond time value
         if (currentMillis - previousMillis >= 20) {
             printf("20 ms has passed\n");
-            fprintf(waveFile, "%fms, %d\n", currentMillis, ledState); 
+            fprintf(waveFile, "%dms, %d\n", currentMillis, ledState); 
         }
 
         if (currentMillis - previousMillis >= onOffTime) {  // run if statement at the start of each wave
@@ -465,7 +465,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
             }
             blink++;
             digitalWrite(blinkLed, ledState);   // instructs GPIO pin to follow current LedState
-            fprintf(waveFile, "Time:%.0f\n", currentMillis);   // print the current output time
+            fprintf(waveFile, "Time:%d\n", currentMillis);   // print the current output time
         }
         //fprintf(waveFile, "Time:%.0f\n", currentMillis);   // print the current output time
     }
