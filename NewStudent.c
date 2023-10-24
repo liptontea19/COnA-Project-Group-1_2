@@ -57,6 +57,9 @@ VERSION_CODENAME=buster
 #define BLINK_RED 2
 #define CONFIRM 1
 
+// MONITORING
+#define STUDENTID "2300977"     // the student ID is not needed in the group project of 2023
+
 // Waveform output file and used variables
 #define FILENAME "waveform.txt" // name of file to generate waveform
 FILE *waveFile; // waveform.txt file reference
@@ -94,8 +97,8 @@ Opens the file to be used for outputting the recorded waveform values
 */
 void setupProgram() {
     wiringPiSetupGpio();
-    //pinMode(RED, OUTPUT);
-    //pinMode(GREEN, OUTPUT);
+    pinMode(RED, OUTPUT);
+    pinMode(GREEN, OUTPUT);
     softPwmCreate(GREEN, 0, 100); //creates a 10ms long pulse cycle for the RED led
     softPwmCreate(RED, 0, 100);   //creates a 10ms long pulse cycle for the GREEN led
     waveFile = fopen(FILENAME, "w"); //opens or creates a file named waveform.txt
@@ -111,7 +114,7 @@ Takes the input of the user selection and directs it to different states of the 
 1. Turn OFF the LEDs
 2. Turn ON the LEDs
 3. Blinks the LEDs according to the user specifications
-
+4. Exits the program
 */
 void startProgram() {
 
@@ -136,9 +139,6 @@ void startProgram() {
                 printf("\nInvalid Input. Try Again...\n");
                 break;
         }
-        // fprintf(waveFile, "F1: %d %f", fGreen, dcGreen); // adds config values for the green LED waveform into file
-        //fprintf(waveFile, "F2: %d %f", fRed, dcRed); // adds config values for the Red LED waveform into the file
-
 
     } while (selection != EXIT);
     
@@ -172,12 +172,10 @@ DC = 100%, f = 0Hz, State Value (y<LED>) = 0 (low)
 void turnOffLeds() {
     system("clear");
     printf("\nTurning off both LEDs...\n");
-    /*
     digitalWrite(GREEN, LOW);
     softPwmWrite(GREEN, 0); // 0% DC (0ms/10ms ON)
     digitalWrite(RED, LOW);
     softPwmWrite(RED, 0); 
-    */
     fprintf(waveFile, "F1: 0Hz,0\n");
     fprintf(waveFile, "F2: 0Hz 0\n");
     dcGreen = 100; // Since the state does not change, DC value is 100%
@@ -355,8 +353,7 @@ int connectToMonitorDevice(int blinkLed, int blinkFrequency, int blinkBrightness
     printf("Connecting to Monitor Device...\n");
     
     int serial_port;
-    //char studentid[] = STUDENTID;
-    char studentid[] = "2300977";
+    char studentid[] = STUDENTID;
 
     char blinkLedString[1];
     char blinkFrequencyString[2];
@@ -421,7 +418,7 @@ Blinks the LED according to the user configuration
     a_1 Checks if 20ms has passed since the previous time
     a_2 Records the data point
     Actual Physical Blink Portion
-    b_1. if time passed is longer than one cycle of wave
+    b_1. if time elapsed is longer than one cycle of wave
     b_2. Toggles the LED state 
     b_2. Triggers softPwmWrite command to set Duty cycle based on brightness
     b_4. Calls digitalWrite() to instruct IO pin to follow softPwmWrite    
@@ -444,15 +441,15 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
     }
     fprintf(waveFile, "%c,%d,%d\n", chosenLed, blinkFrequency, blinkBrightness);
     // Blinking
-    unsigned long previousMillis = 0;   
-    int ledState = LOW;
+    unsigned long previousMillis = 0;   // sets initial historical time value to 0 milliseconds
+    int ledState = LOW; //sets initial LED state to 0
 
     for (int blink = 0; blink < 20;)    // Instructs LED to blink 20 times
     {
         unsigned long currentMillis = millis(); // gets the current millisecond time value
-        if (currentMillis - previousMillis >= 20) {
-            printf("20 ms has passed\n");
-            fprintf(waveFile, "%dms, %d\n", currentMillis, ledState); 
+        if (currentMillis - previousMillis >= 20) { // function that runs when 20ms has elapsed since the previous time
+            //printf("20 ms has passed\n");
+            fprintf(waveFile, "%dms, %d\n", currentMillis, ledState); // Adds a new datapoint line to reflect the current LED's ON or OFF state
         }
 
         if (currentMillis - previousMillis >= onOffTime) {  // run if statement at the start of each wave
@@ -460,17 +457,15 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
             if (ledState == LOW) {
                 ledState = HIGH;
                 softPwmWrite(blinkLed, blinkBrightness);  // blinkbrightness changes the percentage uptime of LED being ON
-                //fprintf(waveFile, "State: 1\n");
-                //fprintf(waveFile, "Time:%.0f\n", currentMillis);   // print the current output time
             } else {
                 ledState = LOW;
                 softPwmWrite(blinkLed, 0);
-                //fprintf(waveFile, "State: 0\n");
             }
             blink++;
             digitalWrite(blinkLed, ledState);   // instructs GPIO pin to follow current LedState
             fprintf(waveFile, "Time:%d\n", currentMillis);   // print the current output time
         }
+        printf("%d Blink\n", blink+1);  // inform user that the program is blinking the LEDs
     }  
 }
 
