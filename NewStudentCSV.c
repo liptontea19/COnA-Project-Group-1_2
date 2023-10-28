@@ -515,7 +515,7 @@ void endProgram() {
 
     for (t = 0; t < MAXBUFFER; t++) // iterate through buffer and print values into CSV file
     {
-        fprintf(waveFile, "%d,%d", dpRedWaveBuffer[t], dpGreenWaveBuffer[t]);
+        fprintf(waveFile, "%d,%d\n", dpRedWaveBuffer[t], dpGreenWaveBuffer[t]);
     }
 
     fclose(waveFile);
