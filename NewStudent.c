@@ -176,8 +176,8 @@ void turnOffLeds() {
     softPwmWrite(GREEN, 0); // 0% DC (0ms/10ms ON)
     digitalWrite(RED, LOW);
     softPwmWrite(RED, 0); 
-    fprintf(waveFile, "F1: 0Hz,0\n");
-    fprintf(waveFile, "F2: 0Hz 0\n");
+    fprintf(waveFile, "G,0,0\n");
+    fprintf(waveFile, "R,0,0\n");
     dcGreen = 100; // Since the state does not change, DC value is 100%
     fGreen = 0; // DC = 100%, f = 0Hz, State Value (yGreen) = 0 (low)
     yGreen = 0; // State Value: LOW, '0'
@@ -443,13 +443,15 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
     // Blinking
     unsigned long previousMillis = 0;   // sets initial historical time value to 0 milliseconds
     int ledState = LOW; //sets initial LED state to 0
+    int timeStamp = 0;
 
     for (int blink = 0; blink < 20;)    // Instructs LED to blink 20 times
     {
         unsigned long currentMillis = millis(); // gets the current millisecond time value
         if (currentMillis - previousMillis >= 20) { // function that runs when 20ms has elapsed since the previous time
-            //printf("20 ms has passed\n");
+            printf("%d ms has passed\n", timeStamp);
             fprintf(waveFile, "%dms, %d\n", currentMillis, ledState); // Adds a new datapoint line to reflect the current LED's ON or OFF state
+            timeStamp = timeStamp + 20;        
         }
 
         if (currentMillis - previousMillis >= onOffTime) {  // run if statement at the start of each wave
