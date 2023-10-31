@@ -1,23 +1,15 @@
-section	.text
-   global _start	 ;must be declared for linker (gcc)
-	
-_start:	         ;tell linker entry point
-   mov	edx,len  ;message length
-   mov	ecx,msg  ;message to write
-   mov	ebx,1    ;file descriptor (stdout)
-   mov	eax,4    ;system call number (sys_write)
-   int	0x80     ;call kernel
-	
-   mov	edx,9    ;message length
-   mov	ecx,s2   ;message to write
-   mov	ebx,1    ;file descriptor (stdout)
-   mov	eax,4    ;system call number (sys_write)
-   int	0x80     ;call kernel
-	
-   mov	eax,1    ;system call number (sys_exit)
-   int	0x80     ;call kernel
-	
-section	.data
-msg db 'Displaying 9 stars',0xa ;a message
-len equ $ - msg  ;length of message
-s2 times 9 db '*'
+    // first_asm.s; Defines a main function to add 2 numbers; 
+    // data sector is for initialized variables and constants
+    .data
+    // text sector is for the actual code;
+    .text
+    .global  main                         // start the assembly code;
+
+     main: 
+                  MOV      X1, #8         // put the first value  in register R1;
+                  MOV      X2, #9         // put the second value in register R2;
+                  ADD      X0, X1, X2     // add X0 = X1 + X2;
+                  RET             // end program; return to previous instruction; LR: Link Reg.
+
+
+
