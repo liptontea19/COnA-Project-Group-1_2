@@ -443,7 +443,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
         ptr_dpArray = &dpGreenWaveBuffer[0];   // assigns memory address of the Green LED Datapoint array to the pointer
     } else {
         blinkLed = RED;
-        sprintf(configBuffer[0], "G,%d,%d", blinkFrequency, blinkBrightness);
+        sprintf(configBuffer[0], "R,%d,%d", blinkFrequency, blinkBrightness);
         ptr_dpArray = &dpRedWaveBuffer[0];
     }
 
