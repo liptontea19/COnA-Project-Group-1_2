@@ -1,8 +1,16 @@
-@first_asm.s; Defines a main function to add 2 numbers;
-.global main
+# ----------------------------------------------------------------------------------------
+# Writes "Hola, mundo" to the console using a C library. Runs on Linux or any other system
+# that does not use underscores for symbols in its C library. To assemble and run:
+#
+#     gcc hola.s && ./a.out
+# ----------------------------------------------------------------------------------------
 
-main:
-    MOV R1,#8   @put value 8 in register R1;
-    MOV R2,#9   @put value 9 in register R2;
-    ADD R0,R1,R2    @add R0=R1+R2
-    BX  LR  @end; return result from function
+        .global main
+
+        .text
+main:                                   # This is called by C library's startup code
+        mov     $message, %rdi          # First integer (or pointer) parameter in %rdi
+        call    puts                    # puts(message)
+        ret                             # Return to C library code
+message:
+        .asciz "Hola, mundo"            # asciz puts a 0 byte at the end
