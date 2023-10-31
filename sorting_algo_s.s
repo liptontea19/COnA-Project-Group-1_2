@@ -1,17 +1,23 @@
-.section .data
-hello_string:    .asciz "Hello, World!\n"
-
-.section .text
-.global _start
-
-_start:
-    @ Write "Hello, World!" to stdout
-    mov r0, #1
-    ldr r1, =hello_string
-    ldr r2, =13
-    mov r7, #4
-    swi 0
-
-    @ Exit the program
-    mov r7, #1
-    swi 0
+section	.text
+   global _start	 ;must be declared for linker (gcc)
+	
+_start:	         ;tell linker entry point
+   mov	edx,len  ;message length
+   mov	ecx,msg  ;message to write
+   mov	ebx,1    ;file descriptor (stdout)
+   mov	eax,4    ;system call number (sys_write)
+   int	0x80     ;call kernel
+	
+   mov	edx,9    ;message length
+   mov	ecx,s2   ;message to write
+   mov	ebx,1    ;file descriptor (stdout)
+   mov	eax,4    ;system call number (sys_write)
+   int	0x80     ;call kernel
+	
+   mov	eax,1    ;system call number (sys_exit)
+   int	0x80     ;call kernel
+	
+section	.data
+msg db 'Displaying 9 stars',0xa ;a message
+len equ $ - msg  ;length of message
+s2 times 9 db '*'
