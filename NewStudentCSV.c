@@ -70,7 +70,7 @@ int fRed, fGreen; // frequency values for the two LEDs (0-10Hz)
 // #define MAXBUFFER 510
 #define MAXCONFIG 2 // sets the maximum number of blink configurations
 // char *buffer[MAXBUFFER]; // global buffer used to store all the blink wave configurations and values
-char *configBuffer[MAXCONFIG];   // stores the waveform configuration values
+char configBuffer[MAXCONFIG][5];   // stores the waveform configuration values in a 2D array
 int dpRedWaveBuffer[500]; // stores the integer datapoints for Red LED recorded over a period of 20 blinks
 int dpGreenWaveBuffer[500];
 
@@ -435,21 +435,15 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
     int *ptr_dpArray;
     // Setting Frequency
     float onOffTime = 1.0f / blinkFrequency * 1000; // period of waveform (T = 1/f)
-    char chosenLed; //character to represent which LED colour 'G' or 'R'
-    char str[7]; // "R,2,100"
 
     // Setting Blink LED to Red or Green based on blinkLed choice
     if (blinkLed == BLINK_GREEN) {
         blinkLed = GREEN;
-        chosenLed = 'G';
-        //*configBuffer[1] = {"%c,%d,%d\n", chosenLed, blinkFrequency, blinkBrightness};
-        str = {"%c,%d,%d\n", chosenLed, blinkFrequency, blinkBrightness};
-        strcpy(*configBuffer[1], str);
+        sprintf(configBuffer[1], "G,%d,%d", blinkFrequency, blinkBrightness);
         ptr_dpArray = &dpGreenWaveBuffer[0];   // assigns memory address of the Green LED Datapoint array to the pointer
     } else {
         blinkLed = RED;
-        chosenLed = 'R';
-        *configBuffer[0] = {"%c,%d,%d\n", chosenLed, blinkFrequency, blinkBrightness};
+        sprintf(configBuffer[0], "G,%d,%d", blinkFrequency, blinkBrightness);
         ptr_dpArray = &dpRedWaveBuffer[0];
     }
 
@@ -457,7 +451,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
     unsigned long previousMillis = 0;   // sets initial historical time value to 0 milliseconds
     int ledState = LOW; //sets initial LED state to 0
     int timeStamp = 0;
-    int bufferIter = 0;
+    int bufferIter = 0; // buffer iterator that adds a spacer to reflect the correct address value to store the datapoint into
 
     for (int blink = 0; blink < 20;)    // Instructs LED to blink 20 times
     {
@@ -465,7 +459,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
         if (currentMillis - previousMillis >= 20) { // function that runs when 20ms has elapsed since the previous time
             printf("%d ms has passed\n", timeStamp);
             timeStamp = timeStamp + 20;     
-            *(ptr_dpArray + bufferIter) = ledState; // Adds a new datapoint line to reflect the current LED's ON or OFF stat  
+            *(ptr_dpArray + bufferIter) = ledState; // Adds a new datapoint line to reflect the current LED's ON or OFF state  
             ++bufferIter; 
         }
 
@@ -480,7 +474,6 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
             }
             blink++;
             digitalWrite(blinkLed, ledState);   // instructs GPIO pin to follow current LedState
-            //fprintf(waveFile, "Time:%d\n", currentMillis);   // print the current output time
         }
         printf("%d Blink\n", blink+1);  // inform user that the program is blinking the LEDs
     }  
