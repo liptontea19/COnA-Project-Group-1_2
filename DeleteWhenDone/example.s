@@ -1,4 +1,6 @@
 .data
+string: .asciz"\nHello World!\n"
+
 .text
 .global main
 .extern printf
