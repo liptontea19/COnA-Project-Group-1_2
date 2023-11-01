@@ -7,7 +7,18 @@ start_time: .xword 0
 end_time: .xword 0
 
 .section .text
-.global main
+.global _start
+
+_start:
+    // Call the 'main' function
+    bl main
+
+    // Your program's cleanup code goes here
+
+    // Exit the program
+    mov x8, #93   // __NR_exit (syscall for program exit)
+    mov x0, #0    // Exit status
+    svc #0        // Invoke syscall
 
 main:
     // Initialize stack pointer and call the quick_sort function
