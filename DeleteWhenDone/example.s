@@ -1,245 +1,90 @@
 .section .data
 MAX_SIZE = 10000
-x:
-    .fill MAX_SIZE, 4, 0
-newline:
-    .string "\n"
-sorted_text:
-    .string "\n\nsorted array:"
-time_text:
-    .string "\n\nTime in sorting %d values using quicksort algorithm is %f milliseconds"
-
-.section .bss
-num_items: .space 4
-first: .space 4
-last: .space 4
-pivot: .space 4
-pivot_value: .space 4
-temp: .space 4
-i: .space 4
-time_taken: .space 8
+x: .skip MAX_SIZE, 8    @ Define an array of 64-bit integers
 
 .section .text
-.globl main
+.global _start
 
-# Function to print an integer
-print_int:
-    pushl %ebp
-    movl %esp, %ebp
-    pushl %eax
-    pushl %ecx
-    pushl %edx
-    movl 8(%ebp), %eax
-    movl $0, %ecx
-    movl $10, %edx
-.loop:
-    xorl %edx, %edx
-    divl %edx
-    addl $48, %edx
-    pushl %edx
-    incl %ecx
-    testl %eax, %eax
-    jnz .loop
-.print_loop:
-    popl %edx
-    movl %edx, (%eax)
-    incl %eax
-    decl %ecx
-    jnz .print_loop
-    movl %eax, %ecx
-    popl %eax
-    popl %edx
-    popl %ecx
-    popl %ebp
-    ret
+_start:
+    // Initialize stack pointer and call the quick_sort function
+    mov x0, sp
+    ldr x1, =0
+    ldr x2, =MAX_SIZE
+    bl quick_sort
 
-# Function to print a string
-print_string:
-    pushl %ebp
-    movl %esp, %ebp
-    pushl %esi
-    movl 8(%ebp), %esi
-.loop:
-    movzbl (%esi), %eax
-    testb %al, %al
-    jz .done
-    pushl %eax
-    call print_char
-    addl $1, %esi
-    popl %eax
-    jmp .loop
-.done:
-    popl %esi
-    popl %ebp
-    ret
+    // Add code to measure and print execution time here
 
-# Function to print a character
-print_char:
-    pushl %eax
-    pushl %ecx
-    pushl %edx
-    movl $4, %eax
-    movl $1, %ebx
-    movl 8(%esp), %ecx
-    movl $1, %edx
-    int $0x80
-    popl %edx
-    popl %ecx
-    popl %eax
-    ret
+    // Exit the program
+    mov x8, #93   // __NR_exit
+    mov x0, #0
+    svc #0
 
-# Function to generate a random number
-rand:
-    movl $1, %eax
-    int $0x80
-    ret
-
-# Function to initialize the random seed
-srand:
-    movl $0, %eax
-    int $0x80
-    ret
-
-# Function to get the current clock time
-clock:
-    movl $14, %eax
-    int $0x80
-    ret
-
-# Function to exit the program
-exit:
-    movl $1, %eax
-    int $0x80
-
-main:
-    call srand  # Initialize random seed
-    movl $MAX_SIZE, num_items  # Set num_items to MAX_SIZE
-
-    # Fill the array with random numbers and print the unsorted array
-    movl $0, i
-fill_loop:
-    cmpl num_items, i
-    jge sort_array
-    pushl i
-    call rand
-    movl %eax, temp
-    popl i
-    movl temp, x(,%i,4)  # x[i] = rand()
-    pushl x(,%i,4)
-    call print_int
-    call print_string
-    jmp fill_loop
-
-sort_array:
-    movl $0, first
-    movl num_items, last
-    subl $1, last
-    pushl last
-    pushl first
-    pushl x
-    call quick_sort
-    addl $12, %esp
-
-    # Print the sorted array
-    call print_string
-    movl $0, i
-print_loop:
-    cmpl num_items, i
-    jge calculate_time
-    pushl i
-    pushl x(,%i,4)
-    call print_int
-    call print_string
-    popl i
-    incl i
-    jmp print_loop
-
-calculate_time:
-    call clock
-    movl %eax, t
-    subl t, %eax
-    movl $1000, %ecx  # CLOCKS_PER_SEC
-    imull %ecx, %eax
-    movl %eax, time_taken
-
-    # Print the time it took to sort the values
-    pushl time_taken
-    pushl MAX_SIZE
-    call print_time
-
-    # Exit
-    call exit
-
-# Quick Sort Function
 quick_sort:
-    pushl %ebp
-    movl %esp, %ebp
-    movl 12(%ebp), %eax  # x
-    movl 16(%ebp), first
-    movl 20(%ebp), last
+    stp x29, x30, [sp, -16]!  // Push the link register and frame pointer onto the stack
+    mov x29, sp               // Set up the new frame pointer
 
-    cmpl first, last
-    jge .quick_sort_done
+    ldr x3, [x0]              // Load the base address of the array
+    cmp x2, x1                // Compare first and last indices
+    bge .L1                   // If first >= last, return
 
-    pushl last
-    pushl first
-    pushl %eax
-    call partition
-    addl $8, %esp
+    // Call the partition function
+    bl partition
 
-    movl %eax, pivot
+    // Recursively call quick_sort on the left and right partitions
+    ldr x4, [sp, #16]         // Load the first argument (base address) from the stack
+    mov x2, x5                // Update 'last' with the pivot index - 1
+    bl quick_sort
 
-    pushl pivot
-    pushl first
-    pushl %eax
-    call quick_sort
-    addl $8, %esp
+    ldr x4, [sp, #16]         // Load the first argument (base address) from the stack
+    mov x1, x5                // Update 'first' with the pivot index + 1
+    ldr x6, [sp, #16]         // Load the third argument (last) from the stack
+    bl quick_sort
 
-    movl pivot, %eax
-    incl %eax
-    movl %eax, first
-
-    pushl last
-    pushl %eax
-    pushl %eax
-    call quick_sort
-    addl $8, %esp
-
-.quick_sort_done:
-    popl %ebp
+    // Pop the frame and link register, and return
+.L1:
+    ldp x29, x30, [sp], 16
     ret
 
-# Partition Function
 partition:
-    pushl %ebp
-    movl %esp, %ebp
-    movl 12(%ebp), %eax  # x
-    movl 16(%ebp), first
-    movl 20(%ebp), last
+    stp x29, x30, [sp, -16]!  // Push the link register and frame pointer onto the stack
+    mov x29, sp               // Set up the new frame pointer
 
-    movl first, pivot
-    movl first, i
+    ldr x3, [x0]              // Load the base address of the array
+    ldr x4, [x1]              // Load the pivot index
+    ldr x5, [x3, x4, lsl #3]  // Load the pivot value
 
-    movl x(,%first,4), %eax  # pivot_value
-    movl %eax, pivot_value
+    // Partition the array into two sub-arrays
+    mov x6, x1                // i = first
+    sub x7, x2, #1            // j = last - 1
 
-.partition_loop:
-    cmpl last, i
-    jg .partition_done
+.L2:
+    ldr x8, [x3, x6, lsl #3]  // Load x[i]
+    ldr x9, [x3, x7, lsl #3]  // Load x[j]
 
-    movl x(,%i,4), %eax  # x[i]
+    // Compare x[i] and pivot value
+    cmp x8, x5
+    bge .L3
 
-    cmpl %eax, pivot_value
-    jge .no_swap
+    // Swap x[i] and x[j]
+    str x9, [x3, x6, lsl #3]
+    str x8, [x3, x7, lsl #3]
 
-    movl x(,%pivot,4), %eax  # x[pivot]
-    movl %eax, temp
-    movl x(,%i,4), %eax  # x[i]
-    movl %eax, x(,%pivot,4)
-    movl temp, x(,%i,4)
+.L3:
+    // Update i and j
+    add x6, x6, #1
+    sub x7, x7, #1
 
-    incl pivot
+    // Check if i <= j
+    cmp x6, x7
+    b.le .L2
 
-.no_swap:
-    incl i
-    jmp .partition_loop
+    // Swap x[i] and pivot value
+    str x5, [x3, x6, lsl #3]
+    str x8, [x3, x4, lsl #3]
+
+    // Return the pivot index
+    mov x0, x6
+
+    // Pop the frame and link register, and return
+    ldp x29, x30, [sp], 16
+    ret
