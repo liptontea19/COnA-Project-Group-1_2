@@ -1,22 +1,18 @@
-.section .data
-hello_message:
-    .ascii "Hello, World!\n"   // The message to be printed
-message_len = . - hello_message  // Calculate the message length
 
-.section .text
-.global _start
+section        .text                   ; //declare the .text section
+global         _start                  ; //has to be declared for the linker (ld)
+_start:                                ; //entry point for _start
+    mov edx, len                       ; //"invoke" the len of the message
+    mov ecx, msg                       ; //"invoke" the message itself
 
-_start:
-    // Prepare syscall arguments
-    mov r0, #1                // File descriptor for stdout (1)
-    ldr r1, =hello_message    // Pointer to the message
-    ldr r2, =message_len      // Message length
+    mov ebx, 1                         ; //set the file descriptor (fd) to stdout
 
-    // Make a syscall to write the message to the console
-    mov r7, #4                // syscall number for write
-    swi 0                     // Invoke the syscall
+    mov eax, 4                         ; //system call for "write"   
+    int 0x80                           ; //call the kernel
 
-    // Exit the program
-    mov r7, #1                // syscall number for exit
-    mov r0, #0                // Exit status
-    swi 0                     // Invoke the syscall
+    mov eax, 1                         ; //system call for "exit"
+    int 0x80                           ; //call the kernel
+
+section        .data                   ; //here you declare the data
+    msg        db "Hello world!"       ; //the actual message to use
+    len        equ $ -msg              ; //get the size of the message
