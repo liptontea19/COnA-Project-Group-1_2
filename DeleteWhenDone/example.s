@@ -3,9 +3,9 @@ MAX_SIZE = 10000
 x: .skip MAX_SIZE, 8    
 
 .section .text
-.global _start
+.global main
 
-_start:
+main:
     // Initialize stack pointer and call the quick_sort function
     mov x0, sp
     ldr x1, =0
