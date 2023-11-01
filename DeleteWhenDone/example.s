@@ -1,18 +1,22 @@
+.section .data
+hello_message:
+    .ascii "Hello, World!\n"
+    message_len = . - hello_message
 
-section        .text                   ; //declare the .text section
-global         _start                  ; //has to be declared for the linker (ld)
-_start:                                ; //entry point for _start
-    mov edx, len                       ; //"invoke" the len of the message
-    mov ecx, msg                       ; //"invoke" the message itself
+.section .text
+.global _start
 
-    mov ebx, 1                         ; //set the file descriptor (fd) to stdout
+_start:
+    // Prepare the syscall arguments
+    mov x0, 1          // File descriptor for stdout (1)
+    ldr x1, =hello_message  // Pointer to the message
+    mov x2, message_len // Message length
 
-    mov eax, 4                         ; //system call for "write"   
-    int 0x80                           ; //call the kernel
+    // Call the write syscall (syscall number 64 on AArch64)
+    mov x8, 64         // syscall number for write
+    svc 0              // Make the syscall
 
-    mov eax, 1                         ; //system call for "exit"
-    int 0x80                           ; //call the kernel
-
-section        .data                   ; //here you declare the data
-    msg        db "Hello world!"       ; //the actual message to use
-    len        equ $ -msg              ; //get the size of the message
+    // Exit the program (syscall number 93 on AArch64)
+    mov x8, 93         // syscall number for exit
+    mov x0, 0          // Exit status
+    svc 0              // Make the syscall
