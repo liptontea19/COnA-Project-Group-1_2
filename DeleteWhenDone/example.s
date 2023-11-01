@@ -1,22 +1,22 @@
 .section .data
 hello_message:
-    .ascii "Hello, World!\n"
-    message_len = . - hello_message
+    .ascii "Hello, World!\n"   @ The message to be printed
+message_len = . - hello_message  @ Calculate the message length
 
 .section .text
 .global _start
 
 _start:
-    // Prepare the syscall arguments
-    mov x0, 1          // File descriptor for stdout (1)
-    ldr x1, =hello_message  // Pointer to the message
-    mov x2, message_len // Message length
+    @ Prepare syscall arguments
+    mov r0, #1                @ File descriptor for stdout (1)
+    ldr r1, =hello_message    @ Pointer to the message
+    ldr r2, =message_len      @ Message length
 
-    // Call the write syscall (syscall number 64 on AArch64)
-    mov x8, 64         // syscall number for write
-    svc 0              // Make the syscall
+    @ Make a syscall to write the message to the console
+    mov r7, #4                @ syscall number for write
+    swi 0                     @ Invoke the syscall
 
-    // Exit the program (syscall number 93 on AArch64)
-    mov x8, 93         // syscall number for exit
-    mov x0, 0          // Exit status
-    svc 0              // Make the syscall
+    @ Exit the program
+    mov r7, #1                @ syscall number for exit
+    mov r0, #0                @ Exit status
+    swi 0                     @ Invoke the syscall
