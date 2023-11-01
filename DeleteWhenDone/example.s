@@ -1,6 +1,6 @@
 .section .data
 MAX_SIZE = 10000
-x: .skip MAX_SIZE, 8    @ Define an array of 64-bit integers
+x: .skip MAX_SIZE, 8    
 
 .section .text
 .global _start
