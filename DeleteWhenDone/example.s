@@ -1,6 +1,6 @@
 .section .data
 MAX_SIZE = 10000
-x: .skip MAX_SIZE, 4     @ Define an array of 32-bit integers
+x: .skip MAX_SIZE, 4    
 
 .section .bss
 start_time: .xword 0
