@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define MAX_SIZE 10000
+#define MAX_SIZE 100
 
 void quick_sort(int x[], int first, int last);
 int partition (int x[],int first, int last);
@@ -48,7 +48,7 @@ int main()
 
     //calculate the seconds taken for the quick sort algo in milliseconds
     t = clock() - t;
-    double time_taken = ((double)t) * CLOCKS_PER_SEC;
+    double time_taken = ((double)t) / CLOCKS_PER_SEC;
 
     //print the time it took to sort the values
     printf("\n\nTime in sorting %d values using quicksort algorithm is %f miliseconds",MAX_SIZE, time_taken);
@@ -69,7 +69,7 @@ void quick_sort(int x[], int first, int last)
 int partition(int x[], int first, int last)
 {
     int pivot;           /*position of the pivot element*/
-    int  pivot_value;    /*value of pivot element*/
+    int pivot_value;    /*value of pivot element*/
     int temp;            /*temporary storage*/
     int i;
     pivot=first;
