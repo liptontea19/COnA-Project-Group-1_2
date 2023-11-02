@@ -60,17 +60,15 @@ VERSION_CODENAME=buster
 // MONITORING
 #define STUDENTID "2300977"     // the student ID is not needed in the group project of 2023
 
-// Waveform output file and used variables
+// Waveform output file name and file pointer
 #define FILENAME "waveform.csv" // name of file to generate waveform
 FILE *waveFile; // waveform.txt file reference
-int yRed, yGreen; // y-axis values for Red and Green LEDs ('1' or '0')
-int dcRed, dcGreen; //DC values for the two LEDs (0-100%)
-int fRed, fGreen; // frequency values for the two LEDs (0-10Hz)
+
 // CSV Buffer Variables
 #define MAXCONFIG 2 // sets the maximum number of blink configurations
 char configBuffer[MAXCONFIG][7];   // stores the waveform configuration values in a 2D array
-int dpRedWaveBuffer[500]; // stores the integer datapoints for Red LED recorded over a period of 20 blinks
-int dpGreenWaveBuffer[500];
+int dpRedWaveBuffer[1000]; // stores the integer datapoints for Red LED recorded over a period of 20 blinks
+int dpGreenWaveBuffer[1000];
 
 /* FUNCTION PROTOTYPES */
 void setupProgram();
@@ -106,11 +104,6 @@ void setupProgram() {
     pinMode(GREEN, OUTPUT);
     softPwmCreate(GREEN, 0, 100); //creates a 10ms long pulse cycle for the RED led
     softPwmCreate(RED, 0, 100);   //creates a 10ms long pulse cycle for the GREEN led
-    /*waveFile = fopen(FILENAME, "w+"); //opens or creates a file named waveform.txt
-    if (waveFile == NULL)   // checks if the specified file exists in the system
-    {
-        printf("Unable to open file: %s", FILENAME);
-    }*/
     system("clear");
 }
 
@@ -182,6 +175,8 @@ void turnOffLeds() {
     digitalWrite(RED, LOW);
     softPwmWrite(RED, 0); 
     configBuffer = {"R,0,0","G,0,0"};
+    dpRedWaveBuffer[0] = {0};
+    dpGreenWaveBuffer[0] = {0};
 }
 
 /* 
@@ -194,7 +189,10 @@ void turnOnLeds() {
     softPwmWrite(GREEN, 100);   // 100% DC (10ms/10ms ON)
     digitalWrite(RED, HIGH);
     softPwmWrite(RED, 100);
+    // buffer value write for 100% DC LED ON
     configBuffer = {"R,0,100","G,0,100"};
+    dpRedWaveBuffer[0] = {1};
+    dpGreenWaveBuffer[0] = {1};
 }
 
 /* 
@@ -329,6 +327,7 @@ int confirmBlinkSelection(int blinkLed, int blinkFrequency, int blinkBrightness)
 }
 
 /* Handshake Algo to connect wiringPi functions to respective Pi hardware*/
+/*
 int connectToMonitorDevice(int blinkLed, int blinkFrequency, int blinkBrightness) {
     system("clear");
     printf("Connecting to Monitor Device...\n");
@@ -384,6 +383,7 @@ int connectToMonitorDevice(int blinkLed, int blinkFrequency, int blinkBrightness
     delay(5000);
     return 1;
 }
+*/
 
 /* 
 INPUT VARIABLES:
@@ -408,15 +408,16 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
 
     printf("\nBlinking...\n");
     
-    int *ptr_dpArray;
+    int *ptr_dpArray;   // pointer to store address of array to record data pointer into 
     // Setting Frequency
     float onOffTime = 1.0f / blinkFrequency * 1000; // period of waveform (T = 1/f)
 
     // Setting Blink LED to Red or Green based on blinkLed choice
+    // Writes LED configuration settings into the buffer based on colour
     if (blinkLed == BLINK_GREEN) {
         printf("Green LED blinking.\n");
         blinkLed = GREEN;
-        sprintf(configBuffer[1], "G,%d,%d", blinkFrequency, blinkBrightness);
+        sprintf(configBuffer[1], "G,%d,%d", blinkFrequency, blinkBrightness);   // Writes Green LED Blink Configuration into the 2nd line of the buffer
         ptr_dpArray = &dpGreenWaveBuffer[0];   // assigns memory address of the Green LED Datapoint array to the pointer
     } else {
         printf("Red LED blinking.\n");
@@ -452,17 +453,18 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
                 ledState = LOW;
                 softPwmWrite(blinkLed, 0);
             }
-	        printf("Blink: %d\n",blink+1);
+	        printf("Blink: %d\n",blink+1);  // inform user of current blink count progress
             blink++;
             digitalWrite(blinkLed, ledState);   // instructs GPIO pin to follow current LedState
         }
-        //printf("%d Blink\n", blink+1);  // inform user that the program is blinking the LEDs
     }
-    printf("Completed blink function.");  
+    printf("Completed blink function.\n");  
 }
 
 /* 
 Resetting and cleaning up before safely exiting the program.
+Turns off any currently ON LEDs
+Writes stored buffer values into a CSV file
 */
 void endProgram() {
     system("clear");
@@ -479,13 +481,14 @@ void endProgram() {
     pinMode(GREEN, INPUT);
     pinMode(RED, INPUT); 
 
-    // Write Buffer values into the CSV File
+    // Write Config Buffer values into the CSV File
     waveFile = fopen(FILENAME, "w+"); //opens or creates a file named waveform.txt
     if (waveFile == NULL)   // checks if the specified file exists in the system
     {
         printf("Unable to open file: %s", FILENAME);
     }
 
+    // Write Datapoint Buffer value into CSV file
     for(int i = 0; i < MAXCONFIG; i++)
     {
         fprintf(waveFile, "%s\n", configBuffer[i]);
