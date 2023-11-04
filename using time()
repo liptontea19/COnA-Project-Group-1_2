@@ -1,0 +1,7 @@
+#include <time.h>                                                                                         time_t begin = time(NULL); 
+ 
+// Call to a function that takes up time 
+ 
+time_t end = time(NULL); 
+ 
+printf("It has been %ld seconds from point begin to end", (end-begin));
