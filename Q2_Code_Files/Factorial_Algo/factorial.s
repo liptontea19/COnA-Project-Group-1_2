@@ -1,5 +1,5 @@
 	.text
-	.section	.rodata
+	.section .rodata
 	.align	3
 .LC0:
 	.string	"\n n=%d"

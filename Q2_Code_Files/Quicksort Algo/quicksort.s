@@ -1,13 +1,13 @@
 	.text
 	.section .rodata
 	.align	3
-.LC0:
+.LC0: //text for "Quick Sort"
 	.string	"\n**Quick Sort**"
 	.align	3
-.LC1:
+.LC1: //text for "Number of element in list to be sorted"
 	.string	"\nNumber of element in list to be sorted %d: "
 	.align	3
-.LC2:
+.LC2: //text for "Enter x"
 	.string	"\nEnter x[%d]: "
 	.align	3
 .LC3:

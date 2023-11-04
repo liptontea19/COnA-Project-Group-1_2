@@ -2,11 +2,12 @@
 #include <time.h>
 
 int main() {
-    int num;
-    printf("Enter an integer: ");
+    int num; 
+
+    printf("Enter an integer: "); //enter a number
     scanf("%d", &num);
 
-    // true if num is perfectly divisible by 2
+    // check if it is divisable by 2, if so, it is even, else it is odd
     if(num % 2 == 0)
         printf("%d is even.", num);
     else
