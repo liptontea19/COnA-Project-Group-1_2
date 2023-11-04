@@ -1,7 +1,5 @@
-	.arch armv8-a
-	.file	"quicksort.c"
 	.text
-	.section	.rodata
+	.section .rodata
 	.align	3
 .LC0:
 	.string	"\n**Quick Sort**"
@@ -281,7 +279,3 @@ partition:
 	.cfi_def_cfa_offset 0
 	ret
 	.cfi_endproc
-.LFE8:
-	.size	partition, .-partition
-	.ident	"GCC: (Debian 12.2.0-14) 12.2.0"
-	.section	.note.GNU-stack,"",@progbits
