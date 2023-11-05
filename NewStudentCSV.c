@@ -66,9 +66,8 @@ FILE *waveFile; // waveform.txt file reference
 
 // CSV Buffer Variables
 #define MAXCONFIG 2 // sets the maximum number of blink configurations
-char configBuffer[MAXCONFIG][7];   // stores the waveform configuration values in a 2D array
-int dpRedWaveBuffer[1000]; // stores the integer datapoints for Red LED recorded over a period of 20 blinks
-int dpGreenWaveBuffer[1000];
+char configBuffer[MAXCONFIG][8];   // stores the waveform configuration values in a 2D array
+char dataPointBuffer[MAXCONFIG][1000];
 
 /* FUNCTION PROTOTYPES */
 void setupProgram();
@@ -174,9 +173,13 @@ void turnOffLeds() {
     softPwmWrite(GREEN, 0); // 0% DC (0ms/10ms ON)
     digitalWrite(RED, LOW);
     softPwmWrite(RED, 0); 
-    configBuffer = {"R,0,0","G,0,0"};
-    dpRedWaveBuffer[0] = {0};
-    dpGreenWaveBuffer[0] = {0};
+    // buffer config and data value write for 100% DC LED OFF
+    strncpy(configBuffer[0],"R,0,100",8);
+    strncpy(configBuffer[1],"G,0,100",8);
+    for (int i = 0; i < MAXCONFIG; i++) 
+    {
+        dataPointBuffer[i][0] = '0'; 
+    }
 }
 
 /* 
@@ -189,10 +192,13 @@ void turnOnLeds() {
     softPwmWrite(GREEN, 100);   // 100% DC (10ms/10ms ON)
     digitalWrite(RED, HIGH);
     softPwmWrite(RED, 100);
-    // buffer value write for 100% DC LED ON
-    configBuffer = {"R,0,100","G,0,100"};
-    dpRedWaveBuffer[0] = {1};
-    dpGreenWaveBuffer[0] = {1};
+    // buffer config and data value write for 100% DC LED ON
+    strncpy(configBuffer[0],"R,0,100",8);
+    strncpy(configBuffer[1],"G,0,100",8);
+    for (int i = 0; i < MAXCONFIG; i++) 
+    {
+        dataPointBuffer[i][0] = '1'; 
+    }
 }
 
 /* 
@@ -408,7 +414,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
 
     printf("\nBlinking...\n");
     
-    int *ptr_dpArray;   // pointer to store address of array to record data pointer into 
+    char *ptr_dpArray;   // pointer to store address of array to record data pointer into 
     // Setting Frequency
     float onOffTime = 1.0f / blinkFrequency * 1000; // period of waveform (T = 1/f)
 
@@ -418,12 +424,12 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
         printf("Green LED blinking.\n");
         blinkLed = GREEN;
         sprintf(configBuffer[1], "G,%d,%d", blinkFrequency, blinkBrightness);   // Writes Green LED Blink Configuration into the 2nd line of the buffer
-        ptr_dpArray = &dpGreenWaveBuffer[0];   // assigns memory address of the Green LED Datapoint array to the pointer
+        ptr_dpArray = &dataPointBuffer[1][0];    
     } else {
         printf("Red LED blinking.\n");
         blinkLed = RED;
         sprintf(configBuffer[0], "R,%d,%d", blinkFrequency, blinkBrightness);
-        ptr_dpArray = &dpRedWaveBuffer[0];
+        ptr_dpArray = &dataPointBuffer[0][0];
     }
 
     // Blinking
@@ -440,7 +446,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
 	        mil20counter = currentMillis;
             printf("Write Count: %d Current Writing Address:%u\nTime Elapsed:%d ms\n",bufferIter,ptr_dpArray+bufferIter, timeStamp);
             timeStamp = timeStamp + 20;     
-            *(ptr_dpArray + bufferIter) = ledState; // Adds a new datapoint line to reflect the current LED's ON or OFF state  
+            *(ptr_dpArray + bufferIter) = ledState + '0';
             ++bufferIter; 
         }
 
@@ -495,9 +501,9 @@ void endProgram() {
 	    printf("Line %d: %s\n", i+1, configBuffer[i]);
     }
 
-    for (int t = 0; t < 500; t++) // iterate through buffer and print values into CSV file
+    for (int t = 0; t < 1000; t++) // iterate through buffer and print values into CSV file
     {
-        fprintf(waveFile, "%d,%d\n", dpRedWaveBuffer[t], dpGreenWaveBuffer[t]);
+        fprintf(waveFile, "%c,%c\n", dataPointBuffer[0][t], dataPointBuffer[1][t]);
     }
 
     fclose(waveFile);
