@@ -62,12 +62,13 @@ VERSION_CODENAME=buster
 
 // Waveform output file name and file pointer
 #define FILENAME "waveform.csv" // name of file to generate waveform
-FILE *waveFile; // waveform.txt file reference
+//FILE *waveFile; // waveform.txt file reference
 
 // CSV Buffer Variables
 #define MAXCONFIG 2 // sets the maximum number of blink configurations
-char configBuffer[MAXCONFIG][8];   // stores the waveform configuration values in a 2D array
-char dataPointBuffer[MAXCONFIG][1000];
+#define MAXRECORDS 1001 // sets the maximum number of recordable data points during a blink sequence
+char configBuffer[MAXCONFIG][9];   // stores the waveform configuration values in a 2D array
+char dataPointBuffer[MAXCONFIG][MAXRECORDS];
 
 /* FUNCTION PROTOTYPES */
 void setupProgram();
@@ -461,7 +462,7 @@ void blinkLedWithConfig(int blinkLed, int blinkFrequency, int blinkBrightness) {
             }
 	        printf("Blink: %d\n",blink+1);  // inform user of current blink count progress
             blink++;
-            digitalWrite(blinkLed, ledState);   // instructs GPIO pin to follow current LedState
+            digitalWrite(blinkLed, ledState);   // instructs GPIO pin to start one blink cycle
         }
     }
     printf("Completed blink function.\n");  
@@ -487,26 +488,28 @@ void endProgram() {
     pinMode(GREEN, INPUT);
     pinMode(RED, INPUT); 
 
-    // Write Config Buffer values into the CSV File
-    waveFile = fopen(FILENAME, "w+"); //opens or creates a file named waveform.txt
-    if (waveFile == NULL)   // checks if the specified file exists in the system
+    FILE *waveFile; // declaration of a file pointer reference
+
+    waveFile = fopen(FILENAME, "w+"); // sets a pointer to the address of file with the name specified in FILENAME
+    if (waveFile == NULL)   // checks if the specified file is able to be opened
     {
-        printf("Unable to open file: %s", FILENAME);
+        printf("Unable to open file: %s", FILENAME);    // inform user if the specified file is unable to be opened
     }
 
-    // Write Datapoint Buffer value into CSV file
+    // Write LED Blink Configuration values from configBuffer into CSV file
     for(int i = 0; i < MAXCONFIG; i++)
     {
         fprintf(waveFile, "%s\n", configBuffer[i]);
 	    printf("Line %d: %s\n", i+1, configBuffer[i]);
     }
 
-    for (int t = 0; t < 1000; t++) // iterate through buffer and print values into CSV file
+    // Write LED Y-Axis Data Point values stored in dataPointBuffer into CSV File
+    for (int t = 0; t < MAXRECORDS; t++) // iterate through buffer and print values into CSV file
     {
-        fprintf(waveFile, "%c,%c\n", dataPointBuffer[0][t], dataPointBuffer[1][t]);
+        fprintf(waveFile, "%c,%c\n", dataPointBuffer[0][t], dataPointBuffer[1][t]); // printed values are Red LED and Green LED amplitude
     }
 
-    fclose(waveFile);
-    printf("Sending waveform file to PC.\n");
+    fclose(waveFile);   // close the waveFile pointer
+    printf("Sending waveform file to PC.\n");   // inform the user that file writing process has been completed
     printf("Bye!\n\n");
 }
