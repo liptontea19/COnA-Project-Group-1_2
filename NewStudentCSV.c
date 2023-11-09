@@ -144,7 +144,7 @@ void startProgram() {
 }
 
 /* 
-The main menu that determines what the user wants to do
+The main menu that determines what the user wants the LEDs to do
 */
 int getUserSelection() {
 
