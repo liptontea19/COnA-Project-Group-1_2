@@ -9,35 +9,35 @@
 	.type	MultiplyNumbers, %function //declare MultiplyNumbers as a function
 MultiplyNumbers:
 .LFB0:
-	.cfi_startproc 
+	.cfi_startproc //start program
 	stp	x29, x30, [sp, -32]! 
 	.cfi_def_cfa_offset 32
 	.cfi_offset 29, -32
 	.cfi_offset 30, -24
 	mov	x29, sp //set x29=sp
-	str	w0, [sp, 28] 
-	ldr	w0, [sp, 28]
+	str	w0, [sp, 28] //store w0 to sp, as 28
+	ldr	w0, [sp, 28] //load w0 to sp, as 28
 	cmp	w0, 0 //compare w0 with 0
-	bne	.L2 
+	bne	.L2 //if equal, branch to L2
 	mov	w0, 1 //set w0=1
 	b	.L3 //go to L3
 .L2:
-	ldr	w1, [sp, 28]
+	ldr	w1, [sp, 28] //load w1 to sp, as 28
 	adrp	x0, .LC0
-	add	x0, x0, :lo12:.LC0
+	add	x0, x0, :lo12:.LC0 
 	bl	printf //branch to printf
-	ldr	w0, [sp, 28]
+	ldr	w0, [sp, 28] //load w0 to sp, as 28
 	sub	w0, w0, #1 //w0=w0-1
 	bl	MultiplyNumbers //branch to MultiplyNumbers
 	mov	w1, w0 //set w1=w0
-	ldr	w0, [sp, 28]
+	ldr	w0, [sp, 28] //load w0 to sp, as 28
 	mul	w0, w1, w0 //multiply w0=w1*w0
 .L3:
 	ldp	x29, x30, [sp], 32
 	.cfi_restore 30
 	.cfi_restore 29
 	.cfi_def_cfa_offset 0
-	ret
+	ret //return
 	.cfi_endproc
 .LFE0:
 	.size	MultiplyNumbers, .-MultiplyNumbers
@@ -57,43 +57,43 @@ MultiplyNumbers:
 	.type	PositiveInt, %function //set PositiveInt as a function
 PositiveInt:
 .LFB1:
-	.cfi_startproc
+	.cfi_startproc //start program
 	stp	x29, x30, [sp, -32]!
 	.cfi_def_cfa_offset 32
 	.cfi_offset 29, -32
 	.cfi_offset 30, -24
 	mov	x29, sp //set x29=sp
-	str	w0, [sp, 28]
-	ldr	w0, [sp, 28]
+	str	w0, [sp, 28] //store w0 to sp, as 28
+	ldr	w0, [sp, 28] //load w0 to sp, as 28
 	cmp	w0, 0 //compare w0 with 0
 	bgt	.L5 //if greater than, then go to L5
-	adrp	x0, .LC1
-	add	x0, x0, :lo12:.LC1
+	adrp	x0, .LC1 //have x0 to contain LC1
+	add	x0, x0, :lo12:.LC1 //x0=x0+lo12:LC1
 	bl	printf //branch to printf
-	adrp	x0, .LC2
-	add	x0, x0, :lo12:.LC2
+	adrp	x0, .LC2 //have x0 to contain LC2
+	add	x0, x0, :lo12:.LC2 //x0=x0+lo12:LC2
 	bl	printf //branch to printf
 	add	x0, sp, 28 //x0=sp+28
 	mov	x1, x0 //set x1=x0
-	adrp	x0, .LC3
-	add	x0, x0, :lo12:.LC3
+	adrp	x0, .LC3 //have x0 to contain LC3
+	add	x0, x0, :lo12:.LC3 //x0=x0+lo12:LC1
 	bl	__isoc99_scanf //branch to isoc99_scanf
-	ldr	w0, [sp, 28]
+	ldr	w0, [sp, 28] //load w0 to sp, as 28
 	cmp	w0, 0 //compare w0 with 0
 	bgt	.L6 //if greater than, then go to L6
-	ldr	w0, [sp, 28]
+	ldr	w0, [sp, 28] //load w0 to sp, as 28
 	bl	PositiveInt //branch to PositiveInt
-	b	.L6
+	b	.L6 //branch to L6
 .L5:
-	ldr	w0, [sp, 28]
-	b	.L4
+	ldr	w0, [sp, 28] //load w0 to sp, as 28
+	b	.L4 //branch to L4
 .L6:
 .L4:
 	ldp	x29, x30, [sp], 32
 	.cfi_restore 30
 	.cfi_restore 29
 	.cfi_def_cfa_offset 0
-	ret
+	ret 
 	.cfi_endproc
 .LFE1:
 	.size	PositiveInt, .-PositiveInt
@@ -110,51 +110,51 @@ PositiveInt:
 	.type	main, %function //set main as a function
 main:
 .LFB2:
-	.cfi_startproc
+	.cfi_startproc //start program
 	stp	x29, x30, [sp, -48]!
 	.cfi_def_cfa_offset 48
 	.cfi_offset 29, -48
 	.cfi_offset 30, -40
 	mov	x29, sp //set x29=sp
-	adrp	x0, .LC4
-	add	x0, x0, :lo12:.LC4
+	adrp	x0, .LC4 //have x0 to contain LC4
+	add	x0, x0, :lo12:.LC4 //x0=x0+lo12:LC4
 	bl	printf //branch to printf
 	add	x0, sp, 20 //x0=sp+20
 	mov	x1, x0 //set x1=x0
-	adrp	x0, .LC3
-	add	x0, x0, :lo12:.LC3
+	adrp	x0, .LC3 //have x0 to contain LC3
+	add	x0, x0, :lo12:.LC3 //x0=x0+lo12:LC3
 	bl	__isoc99_scanf //branch to __isoc99_scanf
-	ldr	w0, [sp, 20]
+	ldr	w0, [sp, 20] //load w0 to sp, as 20
 	bl	PositiveInt //branch to PositiveInt
-	str	w0, [sp, 20]
+	str	w0, [sp, 20] //store w0 to sp, as 20
 	bl	clock //branch to clock
-	str	x0, [sp, 40]
-	ldr	w0, [sp, 20]
+	str	x0, [sp, 40] //store x0 to sp, as 40
+	ldr	w0, [sp, 20] //load w0 to sp, as 20
 	bl	MultiplyNumbers //branch to MultiplyNumbers
-	str	w0, [sp, 36]
+	str	w0, [sp, 36] //store w0 to sp, as 36
 	bl	clock //branch to clock
 	mov	x1, x0 //set x1=x0
-	ldr	x0, [sp, 40]
+	ldr	x0, [sp, 40] //load x0 to sp, as 40
 	sub	x0, x1, x0 //x0=x1-x0
-	str	x0, [sp, 40]
-	ldr	d0, [sp, 40]
-	scvtf	d0, d0
-	mov	x0, 145685290680320
+	str	x0, [sp, 40] //store x0 to sp, as 40
+	ldr	d0, [sp, 40] //load d0 to sp, as 40
+	scvtf	d0, d0 //scan for d0, and store it in d0
+	mov	x0, 145685290680320 //set x0 as 145685290680320
 	movk	x0, 0x412e, lsl 48
 	fmov	d1, x0
 	fdiv	d0, d0, d1
-	str	d0, [sp, 24]
-	ldr	w0, [sp, 20]
-	ldr	d0, [sp, 24]
-	ldr	w2, [sp, 36]
+	str	d0, [sp, 24] //store d0 to sp, as 24
+	ldr	w0, [sp, 20] //load w0 to sp, as 20
+	ldr	d0, [sp, 24] //load d0 to sp, as 24
+	ldr	w2, [sp, 36] //load w2 to sp, as 36
 	mov	w1, w0 //set w1=w0
-	adrp	x0, .LC5
-	add	x0, x0, :lo12:.LC5
+	adrp	x0, .LC5 //have x0 to contain LC5
+	add	x0, x0, :lo12:.LC5 //x0=x0+lo12:LC5
 	bl	printf //branch to printf
 	mov	w0, 0 //set w0=0
 	ldp	x29, x30, [sp], 48
 	.cfi_restore 30
 	.cfi_restore 29
 	.cfi_def_cfa_offset 0
-	ret
-	.cfi_endproc
+	ret //return
+	.cfi_endproc //end program
